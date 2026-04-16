@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hextris: Block Drop</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://www.gstatic.com/firebasejs/10.10.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.10.0/firebase-auth-compat.js"></script>
+</head>
+<body>
+  <main class="game-shell">
+    <section class="game-panel">
+      <header class="header-bar">
+        <div class="brand-group">
+          <div class="game-title">HEXTRIS</div>
+          <div class="game-tag">Block Drop Mode</div>
+        </div>
+        <div class="score-strip">
+          <div class="strip-item">
+            <div class="strip-label">SCORE</div>
+            <div id="scoreValue" class="strip-value">0</div>
+          </div>
+          <div class="strip-item">
+            <div class="strip-label">LEVEL</div>
+            <div id="levelValue" class="strip-value">1</div>
+          </div>
+        </div>
+        <div class="user-status" id="userStatus">Not signed in</div>
+      </header>
+      <div class="game-wrap">
+        <section class="board-area">
+          <div class="playfield-label">PLAYFIELD</div>
+          <div class="board-frame">
+            <canvas id="gameCanvas" width="300" height="600"></canvas>
+          </div>
+        </section>
+        <aside class="side-panel">
+          <div class="preview-column">
+            <div class="preview-card">
+              <div class="preview-title">NEXT</div>
+              <canvas id="nextCanvas" width="150" height="150"></canvas>
+            </div>
+            <div class="preview-card">
+              <div class="preview-title">HOLD</div>
+              <canvas id="holdCanvas" width="150" height="150"></canvas>
+            </div>
+          </div>
+          <div class="controls-card">
+            <div class="controls-title">CONTROLS</div>
+            <div class="control-item"><span>←</span> Move left</div>
+            <div class="control-item"><span>→</span> Move right</div>
+            <div class="control-item"><span>↑</span> Rotate</div>
+            <div class="control-item"><span>↓</span> Soft drop</div>
+            <div class="control-item"><span>Space</span> Hard drop</div>
+            <div class="control-item"><span>C</span> Hold</div>
+          </div>
+        </aside>
+      </div>
+      <div class="hint-line">Arrow keys to play, Space for fast drop, C to hold.</div>
+    </section>
+  </main>
+  <div class="auth-modal" id="authModal">
+    <div class="auth-panel">
+      <div class="auth-header">
+        <h2>Sign In / Sign Up</h2>
+        <p>Use your email to access Hextris and save your session.</p>
+      </div>
+      <div class="auth-tabs">
+        <button type="button" id="signInTab" class="auth-tab active">Sign In</button>
+        <button type="button" id="signUpTab" class="auth-tab">Sign Up</button>
+      </div>
+      <form id="authForm" class="auth-form">
+        <label>Email
+          <input id="authEmail" type="email" required autocomplete="username" />
+        </label>
+        <label>Password
+          <input id="authPassword" type="password" required minlength="6" autocomplete="current-password" />
+        </label>
+        <button type="submit" class="primary-btn">Continue</button>
+      </form>
+      <button id="googleSignInBtn" type="button" class="secondary-btn google-btn">
+        <span class="google-icon" aria-hidden="true"></span>
+        Continue with Google
+      </button>
+      <div class="auth-message" id="authMessage"></div>
+      <button id="signOutBtn" type="button" class="secondary-btn hidden">Sign Out</button>
+    </div>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>
