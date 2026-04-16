@@ -11,6 +11,7 @@ const authForm = document.getElementById('authForm');
 const authEmail = document.getElementById('authEmail');
 const authPassword = document.getElementById('authPassword');
 const authMessage = document.getElementById('authMessage');
+const cheatBanner = document.getElementById('cheatBanner');
 const googleSignInBtn = document.getElementById('googleSignInBtn');
 const userStatus = document.getElementById('userStatus');
 const signInTab = document.getElementById('signInTab');
@@ -37,6 +38,53 @@ auth.setPersistence(firebase.auth.Auth.Persistence.NONE).catch(error => {
 });
 auth.signOut().catch(() => {});
 const googleProvider = new firebase.auth.GoogleAuthProvider();
+
+const antiCheat = {
+  scoreGuard: 0,
+  levelGuard: 1,
+  maxScoreDelta: 2000,
+  maxLevel: 20,
+  minDropInterval: 120,
+  maxDropInterval: 1000,
+  cheatDetected: false,
+  reset() {
+    this.scoreGuard = score;
+    this.levelGuard = level;
+    this.cheatDetected = false;
+  },
+  validate() {
+    if (this.cheatDetected) return;
+    if (score !== this.scoreGuard) this.trigger('Score tampering detected');
+    if (level !== this.levelGuard) this.trigger('Level tampering detected');
+    if (!Array.isArray(board) || board.length !== ROWS || board.some(row => !Array.isArray(row) || row.length !== COLS)) {
+      this.trigger('Board structure tampering detected');
+    }
+    if (dropInterval < this.minDropInterval || dropInterval > this.maxDropInterval) {
+      this.trigger('Drop speed tampering detected');
+    }
+  },
+  trigger(reason) {
+    if (this.cheatDetected) return;
+    this.cheatDetected = true;
+    showCheatBanner(reason);
+    isRunning = false;
+    setTimeout(() => {
+      hideCheatBanner();
+      resetGame();
+      this.reset();
+      isRunning = true;
+    }, 2200);
+  }
+};
+
+function showCheatBanner(message) {
+  cheatBanner.textContent = 'Anti-cheat triggered: ' + message;
+  cheatBanner.classList.remove('hidden');
+}
+
+function hideCheatBanner() {
+  cheatBanner.classList.add('hidden');
+}
 
 function setAuthMessage(message, isError = false) {
   authMessage.textContent = message;
@@ -257,9 +305,8 @@ function clearLines() {
     board.unshift(Array(COLS).fill(''));
   }
   if (lines > 0) {
-    score += lines * lines * 100;
-    level = Math.min(15, 1 + Math.floor(score / 800));
-    dropInterval = Math.max(120, 800 - (level - 1) * 45);
+    addScore(lines * lines * 100);
+    updateLevel();
   }
 }
 
@@ -277,7 +324,7 @@ function drop() {
 function hardDrop() {
   while (isValidPosition(currentPiece, 1, 0)) {
     currentPiece.row += 1;
-    score += 2;
+    addScore(2);
   }
   drop();
 }
@@ -321,8 +368,28 @@ function resetGame() {
   score = 0;
   level = 1;
   dropInterval = 800;
+  antiCheat.reset();
   isRunning = true;
   spawnPiece();
+}
+
+function addScore(amount) {
+  if (typeof amount !== 'number' || amount < 0 || amount > antiCheat.maxScoreDelta) {
+    antiCheat.trigger('Invalid score change detected');
+    return;
+  }
+  score += amount;
+  antiCheat.scoreGuard += amount;
+  updateLevel();
+}
+
+function updateLevel() {
+  const newLevel = Math.min(15, 1 + Math.floor(score / 800));
+  if (newLevel !== level) {
+    level = newLevel;
+    antiCheat.levelGuard = level;
+    dropInterval = Math.max(120, 800 - (level - 1) * 45);
+  }
 }
 
 function draw() {
@@ -342,6 +409,11 @@ function update(time = 0) {
     return;
   }
   if (!isRunning || !isAuthenticated) {
+    requestAnimationFrame(update);
+    return;
+  }
+  antiCheat.validate();
+  if (antiCheat.cheatDetected) {
     requestAnimationFrame(update);
     return;
   }
@@ -366,7 +438,7 @@ window.addEventListener('keydown', event => {
     case 'ArrowDown':
       if (isValidPosition(currentPiece, 1, 0)) {
         currentPiece.row += 1;
-        score += 1;
+        addScore(1);
       }
       break;
     case 'ArrowUp':
@@ -385,4 +457,3 @@ window.addEventListener('keydown', event => {
       break;
   }
 });
-
