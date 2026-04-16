@@ -237,6 +237,28 @@ canvas {
   z-index: 1000;
 }
 
+.cheat-banner {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  background: rgba(255, 71, 71, 0.94);
+  color: #fff;
+  padding: 14px 20px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: 0 22px 48px rgba(0, 0, 0, 0.35);
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  z-index: 1100;
+  max-width: min(90vw, 420px);
+  text-align: center;
+}
+
+.cheat-banner.hidden {
+  display: none !important;
+}
+
 .auth-panel {
   background: rgba(6, 10, 18, 0.98);
   border: 1px solid rgba(255, 255, 255, 0.12);
